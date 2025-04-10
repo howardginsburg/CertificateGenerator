@@ -13,7 +13,7 @@ touch certs/index.txt
 echo 1000 > certs/serial
 ```
 
-1. Generate the Root CA:
+2. Generate the Root CA:
 ```bash
 # Generate the Root CA Private Key
 openssl genrsa -out certs/rootCAPrivateKey.pem 4096
@@ -22,7 +22,7 @@ openssl genrsa -out certs/rootCAPrivateKey.pem 4096
 openssl req -new -x509 -config openssl-root.cnf -nodes -days 7300 -key certs/rootCAPrivateKey.pem -out certs/rootCAPublicKey.pem -subj "/CN=Demo Root CA" -extensions "v3_ca"
 ```
 
-1. Create an Intermediate CA:
+3. Create an Intermediate CA:
 ```bash
 # Generate the Issuing CA Private Key and CSR
 openssl req -newkey rsa:4096 -nodes -keyout certs/intermediateCAPrivateKey.pem -out certs/issuingCertificateRequest.csr -subj "/CN=Demo Intermediate CA"
@@ -31,13 +31,13 @@ openssl req -newkey rsa:4096 -nodes -keyout certs/intermediateCAPrivateKey.pem -
 openssl ca -batch -config openssl-intermediate.cnf -in certs/issuingCertificateRequest.csr -days 3650 -cert certs/rootCAPublicKey.pem -keyfile certs/rootCAPrivateKey.pem -keyform PEM -out certs/intermediateCAPublicKey.pem -extensions v3_intermediate_ca
 ```
 
-1. Create an Intermediate CA Chain:
+4. Create an Intermediate CA Chain:
 ```bash
 # Create the Intermediate CA Chain
 cat certs/intermediateCAPublicKey.pem certs/rootCAPublicKey.pem > certs/intermediateCAPublicKeyChain.pem
 ```
 
-1. Create a Device Certificate:
+5. Create a Device Certificate:
 ```bash
 # Set the device name
 DEVICENAME=Device1
@@ -49,13 +49,13 @@ openssl req -newkey rsa:4096 -nodes -keyout certs/${DEVICENAME}PrivateKey.pem -o
 openssl ca -batch -config openssl-intermediate.cnf -in certs/${DEVICENAME}CertificateRequest.csr -days 365 -cert certs/intermediateCAPublicKey.pem -keyfile certs/intermediateCAPrivateKey.pem -keyform PEM -out certs/${DEVICENAME}PublicKey.pem -extensions usr_cert
 ```
 
-1. Create a Device Certificate Chain:
+6. Create a Device Certificate Chain:
 ```bash
 # Create the Device Certificate Chain
 cat certs/${DEVICENAME}PublicKey.pem certs/intermediateCAPublicKey.pem certs/rootCAPublicKey.pem > certs/${DEVICENAME}PublicKeyChain.pem
 ```
 
-1. Get the fingerprint of the cert.
+7. Get the fingerprint of the cert.
 ```bash
 # Get the raw fingerprint of the cert.
 openssl x509 -in certs/${DEVICENAME}PublicKey.pem -outform DER | openssl dgst -sha1
